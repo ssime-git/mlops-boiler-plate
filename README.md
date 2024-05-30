@@ -3,13 +3,22 @@
 This README provides a concise guide to setting up and managing your MLOps environment, including service URLs and credentials in an easy-to-read table format.
 
 ## Disclaimer
-Building the environment may take some time.
+Building the environment may take some time. You might consider take a brake with a kit-kat.
+
+> The minimum requirements for your VM: 16Gb RAM, 32Gb storage
 
 ## Initialization
 Run the following commands to set up everything:
 
 ```sh
 make init-airflow
+make start
+```
+
+## Running after a first run
+Run
+
+```sh
 make start
 ```
 
