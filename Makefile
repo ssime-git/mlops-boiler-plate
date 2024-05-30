@@ -1,5 +1,13 @@
+init-airflow:
+	mkdir -p ./dags ./logs ./plugins
+	@echo AIRFLOW_UID=$(shell id -u) > .env
+	docker compose up airflow-init
+
 start:
 	docker compose up
+
+stop:
+	docker compose down
 
 restart:
 	docker compose up --build
@@ -7,7 +15,7 @@ restart:
 airflow-logs:
 	docker-compose logs airflow-webserver
 
-setup-airflow:
-	mkdir -p ./dags ./logs ./plugins
-	echo -e "AIRFLOW_UID=$(id -u)\nAIRFLOW_GID=0" > .env
-	docker compose up airflow-init
+del-containers-and-images:
+	docker stop $(docker ps -q)
+	docker rm $(docker ps -aq)
+	docker volume rm $(docker volume ls -q)
