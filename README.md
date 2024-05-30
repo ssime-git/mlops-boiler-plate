@@ -1,9 +1,13 @@
-# MLOps Boilerplate :A streamlined environment for MLOps projects.
+# MLOps Boilerplate : A streamlined environment for MLOps projects.
 
 This README provides a concise guide to setting up and managing your MLOps environment, including service URLs and credentials in an easy-to-read table format.
 
-## Disclaimer
-Building the environment may take some time. You might consider take a brake with a kit-kat.
+## Disclaimers
+Building the environment may take some time. You might consider take a brake with a kit-kat or take some time to read the `docker-compose.yml` file.
+
+Remember that the environment shoould be managed from the `/dockerfile` folder. This mean for example that the notebook should be run from within jupyter and not out of it.
+
+If you need to deploy several model, you need to create another context folder in `pluggins/cd4ml/deploy_model` and connect the latter to airflow somehow (since the pipelines are managed from airflow).
 
 > The minimum requirements for your VM: 16Gb RAM, 32Gb storage
 
