@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: This script takes a csv file and disaggregates it into multiple 
 #              files, parttiioned by the date column.
 # ================================================================================

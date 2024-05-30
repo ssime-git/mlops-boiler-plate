@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: Use this script to validate the raw training and test data. It 
 #              asserts nullability and data types with a json config file that
 #              either already exists or will be created from the training data.

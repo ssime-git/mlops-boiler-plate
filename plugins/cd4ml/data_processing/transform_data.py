@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: Use this script to transform raw input data into a feature set (x)
 #              and label set (y)
 # ================================================================================

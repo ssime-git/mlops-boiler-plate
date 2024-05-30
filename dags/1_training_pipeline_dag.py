@@ -1,9 +1,5 @@
-# Author:      CD4ML Working Group @ D ONE
-# Description: Script that defines and creates the CI Airflow DAG (the MLOps 
-#              training pipeline). If the Airflow scheduler and webserver are
-#              running, you can visit the UI on localhost:8080 and trigger & 
-#              monitor the pipeline
-# ================================================================================
+# Description: Script that defines the training Pipeline.
+# ========================================================
 
 import os
 from datetime import timedelta
@@ -23,9 +19,11 @@ from cd4ml.data_processing.track_data import track_data
 
 ### SET A UNIQUE MODEL NAME (e.g. "model_<YOUR NAME>"):
 _model_name = "my_model"
+
 ### SET A UNIQUE EXPERIMENT NAME (e.g. "experiment_<YOUR NAME>"):
 _mlflow_experiment_name = "my_experiment"
 
+### SET Data source
 _raw_data_dir = '/data/batch1'
 # _raw_data_dir = '/data/batch2'
 
@@ -48,7 +46,7 @@ if not _root_dir:
 
 
 default_args = {
-    'owner': 'cd4ml',
+    'owner': 'ssime',
     'depends_on_past': False,
     'start_date': days_ago(0),
     'retries': 1,

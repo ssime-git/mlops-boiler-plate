@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: Use this script to validate the model performance on an unseen
 #              test set. If the new model exceeds a certain threshold and 
 #              outperforms the model in production, it will be pushed to 

@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: This script takes a folder structure containing multiple CSV files  
 #              and aggregates it into a single file.
 # ================================================================================

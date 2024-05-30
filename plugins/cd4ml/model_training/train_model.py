@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: Use this script to train a new ML model from scratch. The algorithm
 #              is defined in 'get_model'. The trained model will be tracked in
 #              MLflow and is available for further steps in the pipeline via model 

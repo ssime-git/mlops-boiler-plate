@@ -1,9 +1,5 @@
-# Author:      CD4ML Working Group @ D ONE
-# Description: Script that defines and creates the CI Airflow DAG (the MLOps 
-#              training pipeline). If the Airflow scheduler and webserver are
-#              running, you can visit the UI on localhost:8080 and trigger & 
-#              monitor the pipeline
-# ================================================================================
+# Description: Script that defines the model deployment pipeline
+# ===============================================================
 
 from datetime import timedelta
 from airflow import DAG
@@ -16,7 +12,7 @@ from cd4ml.deploy_model import launch_api_endpoint
 _model = "my_model"
 
 default_args = {
-    'owner': 'cd4ml',
+    'owner': 'ssime',
     'depends_on_past': False,
     'start_date': days_ago(0),
     'retries': 1,

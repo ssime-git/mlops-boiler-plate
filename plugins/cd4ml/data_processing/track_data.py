@@ -1,4 +1,3 @@
-# Author:      CD4ML Working Group @ D ONE
 # Description: Use this script to track the current version of the dataset 
 #              located at <data_dir/data.csv> using dvc.
 # ================================================================================
