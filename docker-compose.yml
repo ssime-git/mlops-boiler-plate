@@ -1,0 +1,79 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio123
+    volumes:
+      - minio-data-volume:/data
+
+  mlflow:
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile.mlflow
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_ACCESS_KEY_ID=minio
+      - AWS_SECRET_ACCESS_KEY=minio123
+    command: mlflow server --backend-store-uri postgresql://airflow:airflow@postgres:5432/airflow --default-artifact-root s3://mlflow/ --host 0.0.0.0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - minio
+
+  airflow:
+    image: apache/airflow:2.2.2
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__WEBSERVER__RBAC=true
+      - AIRFLOW__WEBSERVER__AUTHENTICATE=true
+      - AIRFLOW__WEBSERVER__AUTH_ROLE=Admin
+      - AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE=UTC
+      - AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER=s3://airflow/logs
+      - AIRFLOW__CORE__REMOTE_LOG_CONN_ID=minio_default
+      - AIRFLOW__CORE__REMOTE_DAGS_FOLDER=s3://airflow/dags
+      - AIRFLOW__CORE__REMOTE_DAG_PROCESSOR_MANAGER=airflow.utils.db.RemoteDagProcessorManager
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__STORE_DAG_CODE=true
+      - AIRFLOW__CORE__STORE_SERIALIZED_DAGS=true
+      - AIRFLOW__CORE__MIN_SERIALIZED_DAG_UPDATE_INTERVAL=60
+      - AIRFLOW__S3__AWS_ACCESS_KEY_ID=minio
+      - AIRFLOW__S3__AWS_SECRET_ACCESS_KEY=minio123
+      - AIRFLOW__S3__ENDPOINT_URL=http://minio:9000
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - mlflow
+      - minio
+
+  jupyter:
+    image: jupyter/datascience-notebook:latest
+    environment:
+      - JUPYTER_TOKEN=password
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    ports:
+      - "8888:8888"
+    depends_on:
+      - mlflow
+
+volumes:
+  postgres-db-volume:
+  minio-data-volume:
