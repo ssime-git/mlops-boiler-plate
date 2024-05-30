@@ -19,3 +19,6 @@ del-containers-and-images:
 	docker stop $(docker ps -q)
 	docker rm $(docker ps -aq)
 	docker volume rm $(docker volume ls -q)
+
+free-space:
+	df -h
