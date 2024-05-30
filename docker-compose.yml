@@ -33,7 +33,7 @@ services:
       - postgres
       - minio
 
-  airflow:
+  airflow-webserver:
     image: apache/airflow:2.2.2
     environment:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
@@ -62,6 +62,21 @@ services:
       - postgres
       - mlflow
       - minio
+    command: ["airflow", "webserver"]
+
+  airflow-scheduler:
+    image: apache/airflow:2.2.2
+    environment:
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./plugins:/opt/airflow/plugins
+    depends_on:
+      - postgres
+      - mlflow
+      - minio
+    command: ["airflow", "scheduler"]
 
   jupyter:
     image: jupyter/datascience-notebook:latest
