@@ -144,3 +144,4 @@ postgres/*
 mlflow-data/*
 
 !.gitkeep
+logs/
