@@ -1,8 +1,11 @@
 # Description: Use this script to push the model of the current pipeline run to
-#              the MLflow server and lael it as 'production'
+#              the MLflow server and label it as 'production'
 # ================================================================================
 
 import mlflow
+import mlflow.sklearn
+import pickle
+import tempfile
 from mlflow.tracking.client import MlflowClient
 import logging
 
@@ -47,9 +50,26 @@ def push_model(model="LR", **kwargs):
             stage="Archived"
         )
 
-    # register latest model 
-    model_version = mlflow.register_model(f"runs:/{run_id}/model", model).version
-
+    # Load the pickled model and re-register it as a proper MLflow model
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Download the pickle file
+        pickle_path = client.download_artifacts(run_id, "model/model.pkl", temp_dir)
+        
+        # Load the model
+        with open(pickle_path, 'rb') as f:
+            loaded_model = pickle.load(f)
+        
+        # Re-register the model properly
+        with mlflow.start_run(run_id=run_id):
+            # Log the model using sklearn.log_model to create a proper MLflow model
+            model_info = mlflow.sklearn.log_model(
+                sk_model=loaded_model,
+                artifact_path="production_model",
+                registered_model_name=model
+            )
+            
+            model_version = model_info.registered_model_version
+    
     # Promote current model to production
     logger.info(f"promoting model: {run_id} as version: {model_version}")
     client.transition_model_version_stage(
