@@ -15,7 +15,7 @@ def launch_api_endpoint(model=None):
         model (_type_, optional): A model name in mlflow. If model is set the latest model with production tag is taken. Defaults to None.
 
     Raises:
-        ValueError: If run_id and model ar both empty.
+        ValueError: If model is empty.
     """
 
     if model is not None:
@@ -23,32 +23,28 @@ def launch_api_endpoint(model=None):
     else:
         raise ValueError("model must be set")
 
-    bashCommand = "docker run -p 5000:5000 \
-        "+model_env+"\
-        -e MLFLOW_TRACKING_USERNAME={} \
-        -e MLFLOW_TRACKING_PASSWORD={} \
-        -e AZURE_STORAGE_ACCESS_KEY={} \
-        -e AZURE_STORAGE_CONNECTION_STRING={} \
-        -e MLFLOW_TRACKING_URI={} \
-        -d \
-        deployed_model".format(
-        # username for tracking server
-        os.environ.get("MLFLOW_TRACKING_USERNAME"),
-        # password for tracking server
-        os.environ.get("MLFLOW_TRACKING_PASSWORD"),
-        # access key for azure storage
-        os.environ.get("AZURE_STORAGE_ACCESS_KEY"),
-        # connection string for azure storage
-        os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
-        os.environ.get("MLFLOW_TRACKING_URI"),              # tracking uri
-    )
+    bashCommand = "docker run -p 5001:5000 " + \
+        model_env + " " + \
+        "-e MLFLOW_TRACKING_URI={} ".format(os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow-webserver:5000")) + \
+        "-e MLFLOW_S3_ENDPOINT_URL={} ".format(os.environ.get("MLFLOW_S3_ENDPOINT_URL", "http://s3-artifact-storage:9000")) + \
+        "-e AWS_ACCESS_KEY_ID={} ".format(os.environ.get("AWS_ACCESS_KEY_ID", "mlflow_access")) + \
+        "-e AWS_SECRET_ACCESS_KEY={} ".format(os.environ.get("AWS_SECRET_ACCESS_KEY", "mlflow_secret")) + \
+        "--network mlops-boiler-plate_default " + \
+        "-d " + \
+        "deployed_model"
 
+    logger.info(f"Executing: {bashCommand}")
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
+    
+    if error:
+        logger.error(f"Error launching container: {error}")
+    else:
+        logger.info(f"Container launched successfully: {output}")
 
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(description='Launches REST Endpoint')
-    argparser.add_argument('run_id', type=str, help='run_id to deploy')
+    argparser.add_argument('model', type=str, help='model name to deploy')
     args = argparser.parse_args()
-    launch_api_endpoint(args.run_id)
+    launch_api_endpoint(args.model)
