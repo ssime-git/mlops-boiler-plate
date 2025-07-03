@@ -75,18 +75,15 @@ services:
 
   # This container creates the "data" in the S3 server, in which mlflow will later store the artifacts.
   mlflow-init:
-    image: minio/mc
+    image: minio/mc:RELEASE.2024-07-31T15-58-33Z
     depends_on:
       - s3-artifact-storage
     environment:
       <<: *env-mlflow-s3
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc config host add myminio http://s3-artifact-storage:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
-      /usr/bin/mc mb myminio/data;
-      /usr/bin/mc policy download myminio/data;
-      exit 0;
-      "
+    volumes:
+      - ./mlflow-init-script.sh:/usr/local/bin/init.sh:ro
+    entrypoint: ["/bin/bash", "/usr/local/bin/init.sh"]
+    restart: "no"
 
   # This container runs the webserver for mlflow.
   mlflow-webserver:
@@ -138,9 +135,9 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - "8080:8080"
+      - "8082:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8082/health"]
       interval: 30s
       timeout: 10s
       retries: 5
