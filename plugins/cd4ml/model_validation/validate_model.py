@@ -14,6 +14,8 @@ import os
 from mlflow.tracking.client import MlflowClient
 import mlflow
 import pandas as pd
+import pickle
+import tempfile
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,53 @@ def _check_keys(dict_, required_keys):
     for key in required_keys:
         if key not in dict_:
             raise ValueError(f'input argument "data_files" is missing required key "{key}"')
+
+
+def _load_model_from_artifacts(model_uri):
+    """Load pickled model from MLflow artifacts"""
+    logger.info(f"Loading trained model {model_uri}")
+    
+    # Parse the URI to extract run_id
+    # URI format: mlflow-artifacts:/experiment_id/run_id/artifacts/model
+    if model_uri.startswith('mlflow-artifacts:/'):
+        # Remove the protocol prefix
+        path_part = model_uri.replace('mlflow-artifacts:/', '')
+        # Split the path
+        path_components = path_part.split('/')
+        
+        if len(path_components) >= 2:
+            experiment_id = path_components[0]
+            run_id = path_components[1]
+            logger.info(f"Extracted experiment_id: {experiment_id}, run_id: {run_id}")
+        else:
+            raise ValueError(f"Could not parse URI: {model_uri}")
+    else:
+        raise ValueError(f"Unsupported URI format: {model_uri}")
+    
+    # Download the model artifact to a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        client = MlflowClient()
+        
+        try:
+            # Download the model.pkl file
+            model_path = client.download_artifacts(run_id, "model/model.pkl", temp_dir)
+            
+            # Load the pickled model
+            with open(model_path, 'rb') as f:
+                model = pickle.load(f)
+            
+            logger.info("Successfully loaded pickled model!")
+            return model
+            
+        except Exception as e:
+            logger.error(f"Failed to download/load model: {e}")
+            # Let's try to see what artifacts are available
+            try:
+                artifacts = client.list_artifacts(run_id)
+                logger.info(f"Available artifacts for run {run_id}: {[a.path for a in artifacts]}")
+            except Exception as e2:
+                logger.error(f"Could not list artifacts: {e2}")
+            raise e
         
         
 def validate_model(data_files, model="LR", **kwargs):
@@ -72,8 +121,7 @@ def validate_model(data_files, model="LR", **kwargs):
 
     _, latest_model_uri = task_instance.xcom_pull(task_ids='model_training')
 
-    logger.info(f"Loading trained model {latest_model_uri}")
-    latest_model = mlflow.pyfunc.load_model(latest_model_uri)
+    latest_model = _load_model_from_artifacts(latest_model_uri)
 
     logger.info("Loading test data")
     x_test = pd.read_csv(data_files['transformed_x_test_file'])
