@@ -4,10 +4,10 @@ init-airflow:
 	docker compose up airflow-init
 
 start:
-	docker compose up
+	docker compose up -d
 
 stop:
-	docker compose down
+	docker compose down -v
 
 restart:
 	docker compose up --build

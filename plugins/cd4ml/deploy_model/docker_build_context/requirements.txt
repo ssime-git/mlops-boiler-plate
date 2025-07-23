@@ -1,3 +1,6 @@
 mlflow
-azure-storage-blob
-sklearn
+scikit-learn
+pandas
+numpy
+flask
+boto3

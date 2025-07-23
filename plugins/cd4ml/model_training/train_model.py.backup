@@ -6,11 +6,8 @@
 
 import os
 import mlflow
-import mlflow.sklearn
 import time
 import pandas as pd
-import pickle
-import tempfile
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier
 import logging
@@ -54,6 +51,7 @@ def train_model(data_files, experiment_name="experiment", **kwargs):
     start = time.time()
         
     mlflow.set_experiment(experiment_name)
+    mlflow.autolog()
     
     x_train = pd.read_csv(data_files['transformed_x_train_file'])
     y_train = pd.read_csv(data_files['transformed_y_train_file'])
@@ -65,30 +63,9 @@ def train_model(data_files, experiment_name="experiment", **kwargs):
         mlflow.set_tag("git_hash", git_hash)
         
         clf = get_model()
-        
-        # Log parameters
-        if hasattr(clf, 'C'):
-            mlflow.log_param("C", clf.C)
-        if hasattr(clf, 'max_iter'):
-            mlflow.log_param("max_iter", clf.max_iter)
-        
-        # Train the model
         clf.fit(x_train, y_train)
-        
-        # Save model as pickle file and log as artifact
-        # This avoids the MLflow model registry complications with --serve-artifacts
-        with tempfile.TemporaryDirectory() as temp_dir:
-            model_path = os.path.join(temp_dir, 'model.pkl')
-            with open(model_path, 'wb') as f:
-                pickle.dump(clf, f)
-            
-            # Log the model file as an artifact
-            mlflow.log_artifact(model_path, 'model')
-            
-            # Also log model metadata
-            mlflow.log_param("model_type", type(clf).__name__)
-        
-        # Get the model URI - this will now point to the actual artifact location
+    
+        # return the model uri
         model_uri = mlflow.get_artifact_uri("model")
        
     logger.info(f"completed script in {round(time.time() - start, 3)} seconds)") 

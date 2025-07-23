@@ -20,22 +20,22 @@ default_args = {
 }
 
 dag = DAG(
-    'cd_pipeline',
+    'deployment_pipeline',
     default_args=default_args,
     description='Continuous Deployment Pipeline',
-    schedule_interval=timedelta(days=1),
+    schedule_interval=None,  # Manual trigger
 )
 
 with dag:
 
     kill_running_docker_container = BashOperator(
         task_id='kill_running_docker_container',
-        bash_command="docker kill $(docker ps --filter ancestor=deployed_model -q)",
+        bash_command="docker kill $(docker ps --filter ancestor=deployed_model -q) || true",
     )
 
     build_docker_image = BashOperator(
         task_id='build_docker_image',
-        bash_command='docker build $PROJECT_PATH/cd4ml/deploy_model/docker_build_context -t deployed_model',
+        bash_command='docker build /opt/airflow/plugins/cd4ml/deploy_model/docker_build_context -t deployed_model',
         trigger_rule="all_done",
     )
 
