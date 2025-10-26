@@ -32,7 +32,7 @@ Here is a list of the services provided, including their URLs and credentials:
 
 | Services          | URL                       | Credentials           |
 |------------------|---------------------------|-----------------------|
-| Airflow          | http://localhost:8080     | airflow/airflow       |
+| Airflow          | http://localhost:8082     | airflow/airflow       |
 | JupyterLab       | http://localhost:8888     | Token: cd4ml          |
 | MLflow           | http://localhost:5000     | -                     |
 | MinIO S3 server  | http://localhost:9001     | mlflow_access/mlflow_secret |
